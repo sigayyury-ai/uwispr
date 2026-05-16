@@ -1,194 +1,89 @@
-# Flow
+# uwispr (Flow)
 
-Локальный диктовщик для **macOS**: фон в строке меню, **удержали клавишу → говорите → отпустили** — текст вставляется в активное поле. Работает **полностью на вашем Mac** (без облака), движок — [mlx-whisper](https://github.com/ml-explore/mlx-examples/tree/main/whisper) + GPU/Metal на Apple Silicon.
+Local voice dictation for **macOS**. Hold a hotkey, speak, release — text is pasted into the active app. No cloud; uses [mlx-whisper](https://github.com/ml-explore/mlx-examples/tree/main/whisper) on Apple Silicon (GPU/Metal).
 
-Похоже на Wispr Flow, но open-source и self-hosted.
+## Requirements
 
-## Возможности
+- macOS 13+, **Apple Silicon** (M1–M4)
+- Python 3.11+ (3.12 recommended)
+- ~1.5 GB disk for the default model (downloaded once)
 
-- Распознавание русской речи (и английских терминов вперемешку)
-- Иконка микрофона в menu bar (стиль macOS)
-- Вставка в любое приложение через буфер обмена + ⌘V
-- Словарь терминов и исправлений (`glossary.txt`)
-- Настраиваемая горячая клавиша
-- Автозапуск при входе в систему (опционально)
-- Логи в `flow.log`
-
-## Требования
-
-| | |
-|--|--|
-| **ОС** | macOS 13+ (Ventura и новее) |
-| **Железо** | Apple Silicon (M1/M2/M3/M4) — MLX рассчитан на M‑чип |
-| **Python** | 3.11–3.14 (рекомендуется 3.12+) |
-| **Диск** | ~1.5 GB под модель `medium` (скачается при первом запуске) |
-| **RAM** | ~100 MB в покое, ~700 MB–1.2 GB во время распознавания (`medium`) |
-
-На Intel Mac MLX может не работать или быть очень медленным.
-
-## Быстрый старт
+## Install & run
 
 ```bash
-git clone <URL-вашего-репозитория>
-cd whisper
+git clone https://github.com/sigayyury-ai/uwispr.git
+cd uwispr
 
 chmod +x scripts/*.sh
 ./scripts/install.sh
 ./scripts/run.sh
 ```
 
-В строке меню появится иконка микрофона. Подождите 1–2 минуты при первом запуске (загрузка модели).
-
-### Остановка
+Stop before starting again (avoids duplicate menu bar icons):
 
 ```bash
 ./scripts/stop.sh
 ```
 
-Всегда останавливайте перед повторным `./scripts/run.sh` — иначе могут появиться **несколько иконок** в menu bar.
+First launch downloads the Whisper model (1–2 minutes).
 
-## Как пользоваться
+## Usage
 
-1. Откройте любое поле ввода (Notes, Telegram, браузер, IDE).
-2. **Удерживайте Right Option** (правый Option) **1–2 секунды**.
-3. Говорите (язык определяется автоматически, если `language = "auto"`).
-4. **Отпустите** клавишу — через ~0.5–2 с текст вставится в поле.
+1. Focus any text field.
+2. Hold **Right Option** (~1–2 s), speak, release.
+3. Text is inserted via clipboard + ⌘V.
 
-Статус смотрите в меню по клику на иконку микрофона.
+Language: `auto` in `config.toml` (default), or set `ru`, `en`, etc.
 
-## Разрешения macOS (обязательно)
+## macOS permissions
 
-**Системные настройки → Конфиденциальность и безопасность**
+**System Settings → Privacy & Security**
 
-### 1. Микрофон
+- **Microphone** — for Terminal / Cursor (where you run the app)
+- **Accessibility** — enable **Python** and your terminal app (required for paste)
 
-Включите для приложения, из которого запускаете Flow:
+Check: menu bar mic icon → **Check permissions**.
 
-- **Terminal** или **iTerm**, или
-- **Cursor** / **VS Code** (если запускаете из встроенного терминала)
+## Config (`config.toml`)
 
-### 2. Универсальный доступ (Accessibility)
+| Key | Default | Notes |
+|-----|---------|--------|
+| `mlx_model` | `whisper-medium-mlx` | `small` = faster, `large-v3-turbo` = best quality |
+| `language` | `auto` | or `ru`, `en`, … |
+| `hotkey` | `right_option` | also `left_option`, `f5` |
+| `glossary` | `glossary.txt` | terms + `wrong => right` fixes |
 
-Включите **оба** (если используете терминал):
-
-| Приложение | Зачем |
-|------------|--------|
-| **Python** | Процесс, который шлёт ⌘V и слушает глобальную клавишу |
-| **Terminal** / **Cursor** | Откуда вы запустили скрипт |
-
-Без **Python** в списке вставка часто **не работает**, хотя распознавание идёт.
-
-Проверка: меню микрофона → **«Проверить разрешения»**.
-
-## Автозапуск при входе
-
-```bash
-./scripts/install-autostart.sh
-```
-
-Отключить:
-
-```bash
-./scripts/uninstall-autostart.sh
-```
-
-## Настройка (`config.toml`)
-
-| Параметр | Описание | По умолчанию |
-|----------|----------|--------------|
-| `mlx_model` | Модель на Hugging Face | `mlx-community/whisper-medium-mlx` |
-| `language` | `auto` — автоопределение, или `ru`, `en`, `de`, … | `auto` |
-| `initial_prompt` | Подсказка для Whisper | короткая фраза про русскую речь |
-| `glossary` | Файл словаря | `glossary.txt` |
-| `temperature` | `0.0` = меньше выдумок | `0.0` |
-| `hotkey` | `right_option`, `left_option`, `f5` | `right_option` |
-| `input_gain` | Усиление микрофона | `2.5` |
-| `paste_delay` | Пауза перед ⌘V (сек) | `0.15` |
-| `preserve_clipboard` | Восстанавливать старый буфер | `false` |
-| `transcribe_timeout` | Таймаут распознавания (сек) | `90` |
-
-### Модели (скорость ↔ качество)
-
-| Модель | Когда |
-|--------|--------|
-| `mlx-community/whisper-small-mlx` | Быстрее, проще |
-| `mlx-community/whisper-medium-mlx` | **Рекомендуется** |
-| `mlx-community/whisper-medium-mlx-8bit` | Быстрее medium, меньше RAM |
-| `mlx-community/whisper-large-v3-turbo` | Максимум качества, медленнее |
-
-После смены модели: `./scripts/stop.sh && ./scripts/run.sh`, в меню — **«Перезагрузить модель»**.
-
-## Словарь (`glossary.txt`)
+**Glossary example:**
 
 ```text
-# Термин — попадёт в подсказку Whisper
-Cursor
 TryGo
-
-# Исправление после распознавания
-виспер => Whisper
-чипяток => опечаток
+whisper => Whisper
 ```
 
-После правок: меню → **«Перезагрузить словарь»**.
+Menu → **Reload glossary** after edits.
 
-## Структура проекта
-
-```text
-whisper/
-├── flow/              # Код приложения
-├── assets/            # Иконка menu bar
-├── scripts/
-│   ├── install.sh           # venv + зависимости
-│   ├── run.sh               # Запуск (один процесс)
-│   ├── stop.sh              # Остановка всех копий
-│   ├── install-autostart.sh # Автозапуск
-│   └── uninstall-autostart.sh
-├── config.toml        # Настройки
-├── glossary.txt       # Ваш словарь
-├── flow.log           # Лог (создаётся при запуске)
-└── requirements.txt
-```
-
-## Устранение проблем
-
-| Проблема | Решение |
-|----------|---------|
-| Несколько иконок в menu bar | `./scripts/stop.sh`, закройте лишние через меню → Выход |
-| Зависло на «Распознаю…» | Меню → **«Сбросить зависание»** или `stop.sh` + `run.sh` |
-| Текст не вставляется | Включите **Python** в Универсальном доступе |
-| Пустой буфер | То же + говорите громче 1–2 с |
-| Очень медленно | Модель `small` или `medium-8bit` в `config.toml` |
-| `install.sh` падает | `PYTHON=python3.12 ./scripts/install.sh` |
-
-Лог: `tail -f flow.log` — строка `аудио → X.XXs обработка` показывает скорость.
-
-## Приватность
-
-Аудио и текст **не отправляются в интернет** (кроме однократной загрузки весов модели с Hugging Face при первом запуске). Дальше всё локально.
-
-## Лицензии
-
-- Код этого репозитория — укажите свою лицензию (например MIT) в `LICENSE`.
-- [OpenAI Whisper](https://github.com/openai/whisper) — MIT.
-- [mlx-whisper](https://github.com/ml-explore/mlx-examples) — см. лицензию MLX Examples.
-
-При коммерческом использовании проверьте лицензии моделей на Hugging Face и не используйте торговые марки в названии продукта без необходимости.
-
-## Ограничения
-
-- Запуск через **Python**, не нативный `.app` из App Store.
-- Текст появляется **после** отпускания клавиши (не потоковая диктовка в реальном времени).
-- Клавиша **Fn** на MacBook часто **недоступна** сторонним приложениям — используйте `right_option` или `f5`.
-
-## Разработка
+## Autostart
 
 ```bash
-source .venv/bin/activate
-export PYTHONPATH="$(pwd)"
-python -m flow
+./scripts/install-autostart.sh    # enable
+./scripts/uninstall-autostart.sh  # disable
 ```
 
----
+## Troubleshooting
 
-Если проект оказался полезен — ⭐ в репозитории. Issues и PR приветствуются.
+| Issue | Fix |
+|-------|-----|
+| Multiple menu icons | `./scripts/stop.sh` |
+| Stuck on “Transcribing…” | Menu → **Reset stuck state** |
+| No paste | Add **Python** under Accessibility |
+| Slow | Use `whisper-small-mlx` in config |
+
+Logs: `tail -f flow.log`
+
+## Privacy
+
+Audio stays on your Mac. Only the model weights are fetched from Hugging Face on first run.
+
+## License
+
+MIT — see [LICENSE](LICENSE). Whisper weights: see [OpenAI Whisper](https://github.com/openai/whisper) (MIT).
