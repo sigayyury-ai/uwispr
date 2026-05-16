@@ -1,0 +1,34 @@
+# Движок: mlx — Apple Silicon (GPU/Metal)
+backend = "mlx"
+
+# Модель: качество ↑ = медленнее
+# small — быстро | medium — баланс | medium-8bit — быстрее, −RAM | large-v3-turbo — максимум
+mlx_model = "mlx-community/whisper-medium-mlx"
+# mlx_model = "mlx-community/whisper-medium-mlx-8bit"
+
+# auto — Whisper сам определит язык | ru, en, de, … — зафиксировать
+language = "auto"
+
+# Подсказка (пустая = по умолчанию для auto/ru)
+initial_prompt = ""
+
+# Файл словаря: термины и замены «ошибка => верно»
+glossary = "glossary.txt"
+
+# 0.0 = меньше «фантазий» и опечаток (не повышать без нужды)
+temperature = 0.0
+
+# Усиление микрофона сразу после записи (1.0 = без усиления)
+input_gain = 2.5
+# Нормализация до целевого пика (0.9 = громко и чётко для Whisper)
+target_peak = 0.9
+max_gain = 12.0
+
+hotkey = "right_option"
+sample_rate = 16000
+preserve_clipboard = false
+paste_delay = 0.15
+min_record_seconds = 0.4
+
+# Секунд на распознавание — потом сброс (защита от зависания MLX)
+transcribe_timeout = 90

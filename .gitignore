@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+*.egg-info/
+dist/
+build/
+.cache/
+models/
+.flow.pid
+flow.log
