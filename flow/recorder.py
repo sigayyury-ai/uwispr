@@ -24,7 +24,14 @@ class AudioRecorder:
 
     def _ensure_stream(self) -> None:
         if self._stream is not None:
-            return
+            if self._stream.active:
+                return
+            # Устройство пропало/отключилось (Bluetooth-гарнитура и т.п.) —
+            # поток мёртв, но объект остаётся, иначе запись молча не будет
+            # писать звук до перезапуска приложения.
+            print("[audio] Поток неактивен, пересоздаю")
+            self._close_stream()
+
         self._stream = sd.InputStream(
             samplerate=self.sample_rate,
             channels=1,
@@ -35,11 +42,23 @@ class AudioRecorder:
         )
         self._stream.start()
 
+    def _close_stream(self) -> None:
+        if self._stream is not None:
+            try:
+                self._stream.close()
+            except Exception as exc:
+                print(f"[audio] Закрытие потока: {exc}")
+            self._stream = None
+
     def start(self) -> None:
         with self._lock:
             self._frames = []
             self._recording = True
-            self._ensure_stream()
+            try:
+                self._ensure_stream()
+            except Exception:
+                self._recording = False
+                raise
 
     def stop(self) -> np.ndarray | None:
         with self._lock:
@@ -55,10 +74,7 @@ class AudioRecorder:
     def close(self) -> None:
         with self._lock:
             self._recording = False
-            if self._stream is not None:
-                self._stream.stop()
-                self._stream.close()
-                self._stream = None
+            self._close_stream()
 
     @staticmethod
     def duration_sec(audio: np.ndarray, sample_rate: int) -> float:

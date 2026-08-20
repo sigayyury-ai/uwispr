@@ -27,6 +27,16 @@ Stop before starting again (avoids duplicate menu bar icons):
 
 First launch downloads the Whisper model (1–2 minutes).
 
+## Desktop icon
+
+Build **Flow.app** on your Desktop (double-click to start, no Terminal):
+
+```bash
+./scripts/build-app.sh
+```
+
+Creates `~/Desktop/Flow.app`. Re-run after moving the project folder.
+
 ## Usage
 
 1. Focus any text field.
@@ -34,6 +44,22 @@ First launch downloads the Whisper model (1–2 minutes).
 3. Text is inserted via clipboard + ⌘V.
 
 Language: `auto` in `config.toml` (default), or set `ru`, `en`, etc.
+
+### Voice translation (ru → en, same Whisper model)
+
+Whisper can **translate speech to English** (`task=translate`) — no cloud LLM.
+
+1. Say **«переведи на английский»** (or menu → **Режим: перевод → EN**).
+2. Hold Option, speak in Russian, release — **English text** is pasted.
+3. Say **«обычная диктовка»** or menu → **Режим: диктовка** to switch back.
+
+| Voice command | Action |
+|---------------|--------|
+| «переведи на английский» | Enable ru → en mode |
+| «обычная диктовка» / «без перевода» | Back to normal dictation |
+| «переведи на польский» | Not supported (Whisper translates to English only) |
+
+Source language for translation: `translate_source_language = "ru"` in `config.toml`.
 
 ## macOS permissions
 
@@ -50,6 +76,7 @@ Check: menu bar mic icon → **Check permissions**.
 |-----|---------|--------|
 | `mlx_model` | `whisper-medium-mlx` | `small` = faster, `large-v3-turbo` = best quality |
 | `language` | `auto` | or `ru`, `en`, … |
+| `translate_source_language` | `ru` | source for translate mode |
 | `hotkey` | `right_option` | also `left_option`, `f5` |
 | `glossary` | `glossary.txt` | terms + `wrong => right` fixes |
 

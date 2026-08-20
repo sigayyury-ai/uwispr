@@ -9,3 +9,5 @@ build/
 models/
 .flow.pid
 flow.log
+flow.log.old
+flow_state.json

@@ -9,6 +9,9 @@ mlx_model = "mlx-community/whisper-medium-mlx"
 # auto — Whisper сам определит язык | ru, en, de, … — зафиксировать
 language = "auto"
 
+# Исходный язык для режима «переведи на английский» (Whisper translate → EN)
+translate_source_language = "ru"
+
 # Подсказка (пустая = по умолчанию для auto/ru)
 initial_prompt = ""
 

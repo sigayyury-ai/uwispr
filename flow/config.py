@@ -22,6 +22,7 @@ class Settings:
     backend: str
     mlx_model: str
     language: str
+    translate_source_language: str
     initial_prompt: str
     glossary_path: Path
     temperature: float
@@ -48,6 +49,9 @@ class Settings:
             raise ValueError(f"Неизвестная hotkey '{hotkey}'. Допустимо: {allowed}")
 
         language = str(data.get("language", "auto")).strip().lower() or "auto"
+        translate_source = str(
+            data.get("translate_source_language", "ru")
+        ).strip().lower() or "ru"
 
         backend = str(data.get("backend", "mlx")).strip().lower()
         if backend not in ("mlx", "cpu"):
@@ -59,6 +63,7 @@ class Settings:
                 data.get("mlx_model", "mlx-community/whisper-small-mlx")
             ),
             language=language,
+            translate_source_language=translate_source,
             initial_prompt=str(data.get("initial_prompt", "")),
             glossary_path=ROOT / str(data.get("glossary", "glossary.txt")),
             temperature=float(data.get("temperature", 0.0)),
